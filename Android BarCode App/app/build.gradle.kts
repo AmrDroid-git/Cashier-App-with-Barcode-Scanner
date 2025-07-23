@@ -16,6 +16,14 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        applicationVariants.all {
+            outputs.all {
+                val outputImpl = this as com.android.build.gradle.internal.api.BaseVariantOutputImpl
+                val version = versionName ?: "1.0"
+                outputImpl.outputFileName = "BarcodeMaster-v$version.apk"
+            }
+        }
     }
 
     buildTypes {
