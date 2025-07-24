@@ -2,11 +2,15 @@ from PyQt6.QtWidgets import QMainWindow, QTabWidget
 from ui.products_tab import ProductsTab
 from ui.operation_tab import OperationTab
 from ui.history_tab import HistoryTab
+from PyQt6.QtGui import QIcon
+import os
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Barcode Master")
+        icon_path = os.path.join(os.path.dirname(__file__), '..', 'assets', 'icon.ico')
+        self.setWindowIcon(QIcon(icon_path))
         self.setGeometry(100, 100, 800, 600)
 
         self.tabs = QTabWidget()

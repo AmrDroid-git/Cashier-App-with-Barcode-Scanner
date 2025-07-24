@@ -13,7 +13,7 @@ def main():
         with open("style.qss", "r") as f:
             app.setStyleSheet(f.read())
     except FileNotFoundError:
-        print("⚠️ style.qss not found. Running without custom styles.")
+        return
 
     window = MainWindow()
     window.show()

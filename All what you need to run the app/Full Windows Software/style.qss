@@ -1,0 +1,123 @@
+/* ===============================================
+   CLEAN & MODERN PYQT6 STYLESHEET
+   =============================================== */
+
+/* Base Styling */
+QWidget {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-size: 13px;
+    color: #333333;
+}
+
+/* Main Window & Dialogs */
+QDialog {
+    background-color: #ffffff;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+}
+
+/* Tables */
+QTableWidget {
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    background-color: white;
+    gridline-color: #f0f0f0;
+    selection-background-color: #e3f2fd;
+    selection-color: #1565c0;
+}
+
+QHeaderView::section {
+    background-color: #4285f4;
+    color: white;
+    padding: 8px;
+    border: none;
+    font-weight: 500;
+}
+
+QTableWidget::item {
+    padding: 8px 12px;
+}
+
+/* Buttons */
+QPushButton {
+    background-color: #4285f4;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    min-width: 80px;
+    font-weight: 500;
+}
+
+QPushButton:hover {
+    background-color: #3367d6;
+}
+
+QPushButton:pressed {
+    background-color: #2a56c6;
+}
+
+/* Special Buttons */
+QPushButton#finish_btn {
+    background-color: #34a853;
+}
+
+QPushButton#finish_btn:hover {
+    background-color: #2d9248;
+}
+
+QPushButton#delete_btn {
+    background-color: #ea4335;
+}
+
+QPushButton#delete_btn:hover {
+    background-color: #d33426;
+}
+
+/* Labels */
+QLabel {
+    color: #333333;
+    font-weight: 500;
+}
+
+QLabel#total_label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #34a853;
+}
+
+/* Input Fields */
+QLineEdit, QInputDialog {
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    padding: 6px 10px;
+}
+
+QLineEdit:focus {
+    border-color: #4285f4;
+}
+
+/* Message Boxes */
+QMessageBox {
+    background-color: white;
+}
+
+QMessageBox QLabel {
+    color: #333333;
+    padding: 12px;
+}
+
+/* Scrollbars */
+QScrollBar:vertical {
+    width: 10px;
+    background: #f5f5f5;
+}
+
+QScrollBar::handle:vertical {
+    background: #cccccc;
+    border-radius: 4px;
+}
+
+QScrollBar::handle:vertical:hover {
+    background: #aaaaaa;
+}

@@ -58,12 +58,11 @@ class ScanningWindow(QDialog):
                 new_quantity = item[4] + 1
                 self.cart[i] = (item[0], item[1], item[2], item[3], new_quantity)
                 self.update_table()
-                print(f"Updated quantity for {product[1]} to {new_quantity}")
                 return
         product_with_quantity = (*product, 1)
         self.cart.append(product_with_quantity)
         self.update_table()
-        print(f"Added new product: {product[1]} (Quantity: 1)")
+
 
     def update_table(self):
         self.cart = []
