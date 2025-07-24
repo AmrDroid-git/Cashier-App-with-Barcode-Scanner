@@ -193,3 +193,34 @@ def add_to_cart_or_increment(barcode):
     conn.commit()
     conn.close()
 
+
+def decrement_stock_after_sale(cart_items):
+    conn = get_connection()
+    cur = conn.cursor()
+    for _, name, barcode, price, quantity in cart_items:
+        cur.execute("UPDATE products SET quantity = quantity - ? WHERE barcode = ?", (quantity, barcode))
+    conn.commit()
+    conn.close()
+
+
+def cancel_sale(barcode, quantity, date):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    # 1. Delete sale line by barcode and exact datetime
+    cur.execute("DELETE FROM sales WHERE barcode = ? AND date = ?", (barcode, date))
+
+    # 2. Increment stock in products table
+    cur.execute("UPDATE products SET quantity = quantity + ? WHERE barcode = ?", (quantity, barcode))
+
+    conn.commit()
+    conn.close()
+
+
+
+def delete_facture_by_path(filepath):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM factures WHERE filepath = ?", (filepath,))
+    conn.commit()
+    conn.close()

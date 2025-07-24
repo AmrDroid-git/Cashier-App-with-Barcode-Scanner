@@ -2,7 +2,7 @@ from PyQt6.QtWidgets import (QDialog, QVBoxLayout, QTableWidget,
                             QTableWidgetItem, QPushButton, QLabel, 
                             QInputDialog, QMessageBox, QFileDialog)
 
-from services.database import get_cart_items, get_product_by_barcode, get_connection, clear_cart, record_sale, record_facture, add_to_cart_or_increment
+from services.database import get_cart_items, get_product_by_barcode, get_connection, clear_cart, record_sale, record_facture, add_to_cart_or_increment, decrement_stock_after_sale
 from services.pdf_generator import generate_facture_pdf
 from datetime import datetime
 
@@ -150,9 +150,14 @@ class ScanningWindow(QDialog):
         operation_id = datetime.now().strftime("%Y%m%d%H%M%S")
         filepath = generate_facture_pdf(operation_id, formatted_items, folder_path)
 
+        # Record sales
         for _, name, barcode, price, quantity in items:
             record_sale(barcode, name, price, quantity)
+            
+        # Decrement stock
+        decrement_stock_after_sale(items)
 
+        # Record facture
         total_price = sum(price * quantity for _, name, barcode, price, quantity in items)
         record_facture(total_price, filepath)
 

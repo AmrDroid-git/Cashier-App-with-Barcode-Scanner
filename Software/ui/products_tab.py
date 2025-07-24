@@ -1,7 +1,13 @@
-from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QTableWidget, QTableWidgetItem, 
-                            QPushButton, QHBoxLayout, QLineEdit, QMessageBox)
-from services.database import (get_products, add_product, delete_product_by_barcode,
-                             update_product, get_product_by_barcode)
+from PyQt6.QtWidgets import (
+    QWidget, QVBoxLayout, QTableWidget, QTableWidgetItem,
+    QPushButton, QHBoxLayout, QLineEdit, QMessageBox, QFileDialog
+)
+from services.database import (
+    get_products, add_product, delete_product_by_barcode,
+    update_product, get_product_by_barcode
+)
+from services.table_to_pdf import generate_table_pdf  # ✅ for PDF export
+
 
 class ProductsTab(QWidget):
     def __init__(self):
@@ -11,7 +17,6 @@ class ProductsTab(QWidget):
         self.load_products()
 
     def setup_ui(self):
-        """Initialize all UI components."""
         # Table setup
         self.table = QTableWidget()
         self.table.setColumnCount(5)
@@ -20,6 +25,11 @@ class ProductsTab(QWidget):
         self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self.table.itemSelectionChanged.connect(self.load_selected_product)
         self.layout.addWidget(self.table)
+
+        # Export button
+        export_btn = QPushButton("Export Products to PDF")
+        export_btn.clicked.connect(self.export_products_to_pdf)
+        self.layout.addWidget(export_btn)
 
         # Input fields
         self.name_input = QLineEdit(placeholderText="Name")
@@ -50,7 +60,6 @@ class ProductsTab(QWidget):
         self.layout.addLayout(btn_layout)
 
     def load_products(self):
-        """Load products into the table."""
         self.table.setRowCount(0)
         for row, product in enumerate(get_products()):
             self.table.insertRow(row)
@@ -58,7 +67,6 @@ class ProductsTab(QWidget):
                 self.table.setItem(row, col, QTableWidgetItem(str(value)))
 
     def load_selected_product(self):
-        """Load selected product details into input fields."""
         selected = self.table.currentRow()
         if selected >= 0:
             self.name_input.setText(self.table.item(selected, 1).text())
@@ -67,19 +75,14 @@ class ProductsTab(QWidget):
             self.quantity_input.setText(self.table.item(selected, 4).text())
 
     def add_product(self):
-        """Add a new product with validation."""
         try:
             barcode = self.barcode_input.text().strip()
-            
-            # Validate inputs
-            if not all([self.name_input.text(), barcode, 
-                       self.price_input.text(), self.quantity_input.text()]):
+            if not all([self.name_input.text(), barcode, self.price_input.text(), self.quantity_input.text()]):
                 raise ValueError("All fields are required")
-                
-            # Check for duplicate barcode
+
             if get_product_by_barcode(barcode):
                 raise ValueError(f"Product with barcode '{barcode}' already exists")
-                
+
             add_product(
                 self.name_input.text().strip(),
                 barcode,
@@ -89,69 +92,57 @@ class ProductsTab(QWidget):
             self.load_products()
             self.clear_inputs()
             QMessageBox.information(self, "Success", "Product added successfully!")
-            
+
         except ValueError as ve:
             QMessageBox.critical(self, "Validation Error", str(ve))
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to add product: {str(e)}")
 
     def delete_selected(self):
-        """Delete product based on barcode input with confirmation."""
         barcode = self.barcode_input.text().strip()
         if not barcode:
             QMessageBox.warning(self, "Missing Barcode", "Please enter a barcode to delete")
             return
-            
+
         try:
-            # Get product details for confirmation
             product = get_product_by_barcode(barcode)
             if not product:
                 raise ValueError(f"No product found with barcode: {barcode}")
-                
-            # Confirmation dialog
+
             reply = QMessageBox.question(
-                self,
-                'Confirm Deletion',
+                self, 'Confirm Deletion',
                 f"Delete product '{product[1]}' (Barcode: {barcode})?",
                 QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
             )
-            
+
             if reply == QMessageBox.StandardButton.Yes:
                 delete_product_by_barcode(barcode)
                 self.load_products()
                 self.clear_inputs()
                 QMessageBox.information(self, "Success", "Product deleted successfully!")
-                
+
         except ValueError as ve:
             QMessageBox.critical(self, "Not Found", str(ve))
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to delete product: {str(e)}")
 
     def update_selected(self):
-        """Update the selected product with comprehensive validation."""
         selected = self.table.currentRow()
         if selected < 0:
             QMessageBox.warning(self, "Selection Required", "Please select a product to update")
             return
-            
+
         try:
-            # Get input values
             product_id = int(self.table.item(selected, 0).text())
             new_barcode = self.barcode_input.text().strip()
             original_barcode = self.table.item(selected, 2).text()
-            
-            # Validate inputs
-            if not all([self.name_input.text(), new_barcode, 
-                       self.price_input.text(), self.quantity_input.text()]):
+
+            if not all([self.name_input.text(), new_barcode, self.price_input.text(), self.quantity_input.text()]):
                 raise ValueError("All fields are required")
-                
-            # Check for barcode change
-            if new_barcode != original_barcode:
-                # Verify new barcode doesn't exist
-                if get_product_by_barcode(new_barcode):
-                    raise ValueError(f"Barcode '{new_barcode}' already exists for another product")
-            
-            # Perform update
+
+            if new_barcode != original_barcode and get_product_by_barcode(new_barcode):
+                raise ValueError(f"Barcode '{new_barcode}' already exists for another product")
+
             update_product(
                 product_id,
                 self.name_input.text().strip(),
@@ -159,18 +150,34 @@ class ProductsTab(QWidget):
                 float(self.price_input.text()),
                 int(self.quantity_input.text())
             )
-            
+
             self.load_products()
             self.clear_inputs()
             QMessageBox.information(self, "Success", "Product updated successfully!")
-            
+
         except ValueError as ve:
             QMessageBox.critical(self, "Validation Error", str(ve))
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to update product: {str(e)}")
 
+    def export_products_to_pdf(self):
+        path, _ = QFileDialog.getSaveFileName(self, "Save Product List", "", "PDF Files (*.pdf)")
+        if not path:
+            return
+
+        try:
+            rows = []
+            for r in range(self.table.rowCount()):
+                row = [self.table.item(r, c).text() for c in range(self.table.columnCount())]
+                rows.append(row)
+
+            generate_table_pdf("Product List", ["ID", "Name", "Barcode", "Price", "Quantity"], rows, path)
+            QMessageBox.information(self, "Saved", f"Products exported to:\n{path}")
+
+        except Exception as e:
+            QMessageBox.critical(self, "Export Error", f"Failed to export products:\n{str(e)}")
+
     def clear_inputs(self):
-        """Clear all input fields."""
         self.name_input.clear()
         self.barcode_input.clear()
         self.price_input.clear()
