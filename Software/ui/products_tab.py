@@ -2,11 +2,14 @@ from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QTableWidget, QTableWidgetItem,
     QPushButton, QHBoxLayout, QLineEdit, QMessageBox, QFileDialog
 )
+from PyQt6.QtCore import QTimer
+import subprocess
+
 from services.database import (
     get_products, add_product, delete_product_by_barcode,
     update_product, get_product_by_barcode
 )
-from services.table_to_pdf import generate_table_pdf  # ✅ for PDF export
+from services.table_to_pdf import generate_table_pdf
 
 
 class ProductsTab(QWidget):
@@ -15,6 +18,13 @@ class ProductsTab(QWidget):
         self.layout = QVBoxLayout(self)
         self.setup_ui()
         self.load_products()
+
+        # Scanner timer setup
+        self.scan_timer = QTimer()
+        self.scan_timer.setInterval(1000)
+        self.scan_timer.timeout.connect(self.check_new_barcode)
+        self.last_modified_time = None
+        self.last_barcode = None
 
     def setup_ui(self):
         # Table setup
@@ -43,6 +53,11 @@ class ProductsTab(QWidget):
         input_layout.addWidget(self.price_input)
         input_layout.addWidget(self.quantity_input)
         self.layout.addLayout(input_layout)
+
+        # Scan Barcode Button
+        self.scan_barcode_btn = QPushButton("Scan Barcode")
+        self.scan_barcode_btn.clicked.connect(self.start_barcode_scan)
+        self.layout.addWidget(self.scan_barcode_btn)
 
         # Buttons
         btn_layout = QHBoxLayout()
@@ -182,3 +197,43 @@ class ProductsTab(QWidget):
         self.barcode_input.clear()
         self.price_input.clear()
         self.quantity_input.clear()
+
+    # === ADB Barcode Scanning Logic ===
+    def start_barcode_scan(self):
+        self.last_modified_time = self.get_barcode_file_mtime()
+        self.last_barcode = None
+        self.scan_timer.start()
+        print("Started barcode scanning...")
+
+    def get_barcode_file_mtime(self):
+        try:
+            result = subprocess.check_output(
+                ['adb', 'shell', 'stat', '-c', '%Y', '/sdcard/barcode.txt']
+            )
+            return float(result.decode().strip())
+        except Exception as e:
+            print(f"Error getting file mtime: {e}")
+            return None
+
+    def get_last_barcode(self):
+        try:
+            result = subprocess.check_output(
+                ['adb', 'shell', 'tail', '-n', '1', '/sdcard/barcode.txt']
+            )
+            full_line = result.decode().strip()
+            barcode = full_line.split('|')[0].strip()
+            return barcode
+        except Exception as e:
+            print(f"Error reading barcode: {e}")
+            return None
+
+    def check_new_barcode(self):
+        current_mtime = self.get_barcode_file_mtime()
+        if current_mtime and (self.last_modified_time is None or current_mtime > self.last_modified_time):
+            self.last_modified_time = current_mtime
+            barcode = self.get_last_barcode()
+            if barcode and barcode != self.last_barcode:
+                self.last_barcode = barcode
+                self.barcode_input.setText(barcode)
+                print(f"Scanned barcode set: {barcode}")
+                self.scan_timer.stop()
