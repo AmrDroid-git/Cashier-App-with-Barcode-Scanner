@@ -29,10 +29,12 @@ class ScanningWindow(QDialog):
         # Buttons
         self.finish_btn = QPushButton("Finish Scanning")
         self.finish_btn.clicked.connect(self.confirm_and_generate_pdf)
+        self.finish_btn.setProperty("class", "success")
         self.layout.addWidget(self.finish_btn)
         
         self.delete_btn = QPushButton("Delete Selected Item")
         self.delete_btn.clicked.connect(self.delete_selected_item)
+        self.delete_btn.setProperty("class", "danger")
         self.layout.addWidget(self.delete_btn)
         
         self.update_qty_btn = QPushButton("Update Quantity")
@@ -45,6 +47,7 @@ class ScanningWindow(QDialog):
         
         self.cancel_btn = QPushButton("Cancel Scan")
         self.cancel_btn.clicked.connect(self.cancel_scan)
+        self.cancel_btn.setProperty("class", "secondary")
         self.layout.addWidget(self.cancel_btn)
         
         self.cart = []

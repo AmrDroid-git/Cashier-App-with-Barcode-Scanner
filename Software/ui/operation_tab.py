@@ -16,6 +16,7 @@ class OperationTab(QWidget):
         # Scan button
         self.scan_btn = QPushButton("Start Scanning")
         self.scan_btn.clicked.connect(self.start_scanning)
+        self.scan_btn.setObjectName("start_scan")
         self.layout.addWidget(self.scan_btn)
         
         # Setup timer
