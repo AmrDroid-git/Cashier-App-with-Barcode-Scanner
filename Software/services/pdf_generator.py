@@ -5,9 +5,10 @@ from reportlab.lib import colors
 from reportlab.lib.units import mm
 from reportlab.pdfgen import canvas
 from datetime import datetime
+import os
 
-def generate_facture_pdf(operation_id, scanned_items):
-    filename = f"facture_{operation_id}.pdf"
+def generate_facture_pdf(operation_id, scanned_items, output_path):
+    filename = os.path.join(output_path, f"facture_{operation_id}.pdf")
     c = canvas.Canvas(filename, pagesize=A4)
     width, height = A4
 
