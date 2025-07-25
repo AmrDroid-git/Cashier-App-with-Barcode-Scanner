@@ -1,3 +1,6 @@
+Youtube Video explaining how to run the Programs:
+https://youtu.be/lcxeIJVYmo0
+
 🧾 Cashier App with Barcode Scanner
 
 This project is a complete cashier system designed for small to medium-sized shops. It includes:
