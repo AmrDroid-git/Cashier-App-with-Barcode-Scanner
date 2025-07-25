@@ -2,6 +2,7 @@ package com.example.barcodescanner
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.media.MediaPlayer
 import android.os.Bundle
 import android.os.Environment
 import android.util.Log
@@ -140,6 +141,7 @@ class MainActivity : ComponentActivity() {
                                     lastScanned = rawValue
                                     lastTimestamp = now
                                     messageText = "Scanned: $rawValue"
+                                    playSound(R.raw.scanned)
                                 } else {
                                     messageText = "Duplicate or invalid"
                                 }
@@ -242,4 +244,13 @@ class MainActivity : ComponentActivity() {
             Log.e("FILE_WRITE", "Error writing barcode: ${e.message}")
         }
     }
+
+    private fun playSound(resourceId: Int) {
+        val player = MediaPlayer.create(this, resourceId)
+        player.setOnCompletionListener {
+            it.release()
+        }
+        player.start()
+    }
+
 }
